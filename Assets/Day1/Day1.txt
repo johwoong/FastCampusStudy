@@ -1,0 +1,69 @@
+Day1
+
+Rigidbody를 이용한 캐릭터 이동 구현
+1. Variables
+speed : 캐릭터의 이동 속도
+jumpHeight : 캐릭터의 점프 높이
+dashDistance : 캐릭터의 대시 거리
+Rigidbody : 물리 컴포넌트
+inputDirection : 플레이어 입력을 기반으로 한 캐릭터 이동방향 저장변수
+bool isGrounded : 캐릭터가 땅에 닿아있는지 여부를 저장하는 변수
+LayerMask groundLayerMask : 땅을 검출하기 위한 레이어 마스크
+float groundCheckDistance : 땅을 검출하는 레이캐스트의 길이
+
+2. Start()
+Rigibody컴포넌트 가져오기
+
+3. Update()
+매 프레임마다 호출되며 사용자 입력을 처리
+inputDirection = Vector3.zero;
+inputDirection.x = Input.GetAxis("Horizontal");
+inputDirection.y = Input.GetAxis("Vertical");
+if(inputDirection != Vector3.zero)
+{
+    transform.forward = inputDirection;
+}
+
+3-1. 점프공식
+(1) 캐릭터가 땅에 닿아 있을 때, "Jump"버튼을 누르면 점프를 실행
+(2) 점프 공식
+Vector3 jumpVelocity = Vector3.up * Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
+rigidbody.AddForce(jumpVelocity, ForceMode.VelocityChange);
+
+jumpHeight : 점프 높이
+Physics.gravity.y : 게임 오브젝트에 적용된 중력 값, 위로 올라가도록 하기 위해 음수 값 적용 
+Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y)
+초기속도를 계산하는 부분으로, 중력과 점프 높이를 고려하여 점프를 위해 필요한 초기속도 계산 
+rigidboedy.Addforce(jumpVelocity, ForceMode.VelocityChange);
+ForceMode.velocityChange : 물체의 속도를 즉시 변경
+
+3-2 대시 공식
+// 대시 계산공식
+Vector3 dashVelocity = Vector3.Scale(transform.forward, dashDistance * new Vector3((Mathf.Log(1f / (Time.deltaTime * rigidbody.drag + 1)) / -Time.deltaTime), 0, (Mathf.Log(1f / (Time.deltaTime * rigidbody.drag + 1)) / -Time.deltaTime)));
+rigidbody.AddForce(dashVelocity, ForceMode.VelocityChange);
+
+dashDistance 변수는 사용자가 지정한 대시 거리입니다.
+transform.forward는 캐릭터의 현재 전방 방향을 나타내는 벡터입니다.
+Mathf.Log(1f / (Time.deltaTime * rigidbody.drag + 1)) / -Time.deltaTime는 캐릭터의 현재 속도를 고려한 대시에 필요한 초기 속도를 계산하는 부분입니다.
+Vector3.Scale(transform.forward, dashDistance * new Vector3(...))를 통해 대시 방향의 벡터에 대시 거리를 곱한 후, 초기 속도 벡터를 적용합니다.
+최종적으로 계산된 dashVelocity를 rigidbody.AddForce 메서드를 통해 Rigidbody에 적용합니다. ForceMode.VelocityChange는 물체의 속도를 즉시 변경하는 옵션입니다.
+
+
+4. FixedUpdate()
+
+FixedUpdate() 함수는 물리 업데이트 주기에 맞춰 호출됩니다.
+inputDirection과 speed를 이용하여 Rigidbody를 통해 캐릭터를 이동시킵니다.
+
+
+5. CheckGroundStatus()
+땅에 닿아 있는지 검사하기 위해 레이캐스트를 사용하는 메서드입니다.
+레이캐스트를 캐릭터의 아래 방향으로 쏘아 땅과 충돌하면 isGrounded를 true로 설정합니다.
+그렇지 않으면 isGrounded를 false로 설정합니다.
+
+
+요약하면, 이 스크립트는 Rigidbody 컴포넌트를 사용하여 캐릭터의 이동을 구현합니다. 플레이어의 입력을 받아 이동 방향을 결정하고, 점프 및 대시 동작을 처리합니다. 또한 땅에 닿아 있는지 여부를 검사하여 점프 및 다른 동작을 허용하거나 제한합니다.
+
+
+
+
+
